@@ -3,81 +3,81 @@ provider "digitalocean" {
 }
 
 terraform {
-    required_providers {
-      digitalocean = {
-        source = "digitalocean/digitalocean"
-        version = "~> 2.0"
-      }
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
     }
+  }
 
-    backend "s3" {
-      endpoints = {
-        s3 = "https://nyc3.digitaloceanspaces.com"
-      }
-      bucket = "bastibucket"
-      key ="terraform.tfstate"
-      skip_credentials_validation = true
-      skip_metadata_api_check = true
-      skip_requesting_account_id = true
-      skip_s3_checksum = true
-      region = "us-east-1"
+  backend "s3" {
+    endpoints = {
+      s3 = "https://nyc3.digitaloceanspaces.com"
     }
+    bucket                      = "bastibucket"
+    key                         = "terraform.tfstate"
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_requesting_account_id  = true
+    skip_s3_checksum            = true
+    region                      = "us-east-1"
+  }
 
 }
 
 resource "digitalocean_project" "diego_server_project" {
-  name = "diego_server_project"
+  name        = "diego_server_project"
   description = "servidores con digitalocean"
-  resources = [digitalocean_droplet.diegoServerDroplet.urn]
+  resources   = [digitalocean_droplet.diegoServerDroplet.urn]
 }
 
 resource "digitalocean_ssh_key" "diego_server_keys" {
-  name = "diego_server_keys"
+  name       = "diego_server_keys"
   public_key = file("./keys/keys_yo.pub")
 }
 
 resource "digitalocean_droplet" "diegoServerDroplet" {
-  name = "diegoServerDroplet"
-  size = "s-2vcpu-4gb-120gb-intel"
-  image = "ubuntu-24-04-x64"
-  region = "sfo3"
-  ssh_keys = [digitalocean_ssh_key.diego_server_keys.id]
+  name      = "diegoServerDroplet"
+  size      = "s-2vcpu-4gb-120gb-intel"
+  image     = "ubuntu-24-04-x64"
+  region    = "sfo3"
+  ssh_keys  = [digitalocean_ssh_key.diego_server_keys.id]
   user_data = file("./docker-install.sh")
 
   provisioner "remote-exec" {
-    inline = [ 
+    inline = [
       "mkdir -p /projects",
       "touch /projects/.env",
       "echo \"MYSQL_DB=${var.MYSQL_DB}\" >> /projects/.env",
       "echo \"MYSQL_USER=${var.MYSQL_USER}\" >> /projects/.env",
       "echo \"MYSQL_HOST=${var.MYSQL_HOST}\" >> /projects/.env",
       "echo \"MYSQL_PASSWORD=${var.MYSQL_PASSWORD}\" >> /projects/.env",
-      ]
+    ]
 
     connection {
-    type = "ssh"
-    user = "root"
-    private_key = file("./keys/keys_yo")
-    host = digitalocean_droplet.diegoServerDroplet.ipv4_address
+      type        = "ssh"
+      user        = "root"
+      private_key = file("./keys/keys_yo")
+      host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
     }
   }
 
   provisioner "file" {
-    source = "./containers/docker-compose.yml"
+    source      = "./containers/docker-compose.yml"
     destination = "/projects/docker-compose.yml"
 
     connection {
-      type = "ssh"
-      user = "root"
+      type        = "ssh"
+      user        = "root"
       private_key = file("./keys/keys_yo")
-      host = digitalocean_droplet.diegoServerDroplet.ipv4_address
+      host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
     }
   }
 }
 
 
 resource "time_sleep" "wait_installations" {
-    depends_on = [ digitalocean_droplet.diegoServerDroplet ]
+  depends_on      = [digitalocean_droplet.diegoServerDroplet]
   create_duration = "130s"
 }
 
@@ -112,7 +112,7 @@ resource "time_sleep" "wait_installations" {
 # }
 
 output "ip" {
-    value = digitalocean_droplet.diegoServerDroplet.ipv4_address
+  value = digitalocean_droplet.diegoServerDroplet.ipv4_address
 }
 
 # resource "null_resource" "copiar_documento_adidas" {

@@ -5,20 +5,20 @@ variable "digitalocean_token" {
 variable "MYSQL_DB" {
   type = string
 }
- 
+
 variable "MYSQL_HOST" {
-type= string
+  type = string
 }
- 
+
 variable "MYSQL_PASSWORD" {
   type = string
 }
- 
+
 variable "MYSQL_USER" {
   type = string
 }
 
-variable "DIGI_TOKEN_API"{
+variable "DIGI_TOKEN_API" {
   type = string
 }
 
