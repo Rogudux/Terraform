@@ -63,7 +63,7 @@ resource "digitalocean_droplet" "diegoServerDroplet" {
       type        = "ssh"
       user        = "root"
       private_key = file("./keys/keys_yo")
-      host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
+      host        = self.ipv4_address
     }
   }
 
@@ -102,19 +102,19 @@ resource "null_resource" "init_api" {
   }
 }
 
-resource "null_resource" "ssh-container" {
-  depends_on = [time_sleep.wait_installations]
-  connection {
-    type        = "ssh"
-    user        = "root"
-    private_key = file("./keys/keys_yo")
-    host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
-  }
+# resource "null_resource" "ssh-container" {
+#   depends_on = [time_sleep.wait_installations]
+#   connection {
+#     type        = "ssh"
+#     user        = "root"
+#     private_key = file("./keys/keys_yo")
+#     host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
+#   }
 
-  provisioner "remote-exec" {
-    inline = ["docker container run --name=adidas -dp 80:80 nginx"]
-  }
-}
+#   provisioner "remote-exec" {
+#     inline = ["docker container run --name=adidas -dp 80:80 nginx"]
+#   }
+# }
 
 output "ip" {
   value = digitalocean_droplet.diegoServerDroplet.ipv4_address
