@@ -1,5 +1,5 @@
 provider "digitalocean" {
-  token = var.digitalocean_token
+  token = var.DIGITALOCEAN_TOKEN
 }
 
 terraform {
@@ -47,11 +47,16 @@ resource "digitalocean_droplet" "diegoServerDroplet" {
   provisioner "remote-exec" {
     inline = [
       "mkdir -p /projects",
+      "mkdir -p /volumes/nginx/html",
+      "mkdir -p /volumes/nginx/certs",
+      "mkdir -p /volumes/nginx/vhostd",
       "touch /projects/.env",
       "echo \"MYSQL_DB=${var.MYSQL_DB}\" >> /projects/.env",
       "echo \"MYSQL_USER=${var.MYSQL_USER}\" >> /projects/.env",
       "echo \"MYSQL_HOST=${var.MYSQL_HOST}\" >> /projects/.env",
       "echo \"MYSQL_PASSWORD=${var.MYSQL_PASSWORD}\" >> /projects/.env",
+      "echo \"DOMAIN=${var.DOMAIN}\" >> /projects/.env",
+      "echo \"USER_EMAIL=${var.USER_EMAIL}\" >> /projects/.env",
     ]
 
     connection {
@@ -76,40 +81,40 @@ resource "digitalocean_droplet" "diegoServerDroplet" {
 }
 
 
-# resource "time_sleep" "wait_installations" {
-#   depends_on      = [digitalocean_droplet.diegoServerDroplet]
-#   create_duration = "130s"
-# }
+resource "time_sleep" "wait_installations" {
+  depends_on      = [digitalocean_droplet.diegoServerDroplet]
+  create_duration = "130s"
+}
 
-# resource "null_resource" "init_api" {
-#   depends_on = [ time_sleep.wait_installations ]
-#   provisioner "remote-exec" {
-#     inline = [
-#       "cd /projects",
-#       "docker-compose up -d"
-#     ]
-#     connection {
-#       type = "ssh"
-#       user = "root"
-#       private_key = file("./keys/keys_yo")
-#       host = digitalocean_droplet.diegoServerDroplet.ipv4_address
-#     }
-#   }
-# }
+resource "null_resource" "init_api" {
+  depends_on = [time_sleep.wait_installations]
+  provisioner "remote-exec" {
+    inline = [
+      "cd /projects",
+      "docker-compose up -d"
+    ]
+    connection {
+      type        = "ssh"
+      user        = "root"
+      private_key = file("./keys/keys_yo")
+      host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
+    }
+  }
+}
 
-# resource "null_resource" "ssh-container" {
-#   depends_on = [ time_sleep.wait_installations ]
-#   connection {
-#     type = "ssh"
-#     user = "root"
-#     private_key = file("./keys/keys_yo")
-#     host = digitalocean_droplet.diegoServerDroplet.ipv4_address
-#   }
+resource "null_resource" "ssh-container" {
+  depends_on = [time_sleep.wait_installations]
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = file("./keys/keys_yo")
+    host        = digitalocean_droplet.diegoServerDroplet.ipv4_address
+  }
 
-#   provisioner "remote-exec" {
-#     inline = [ "docker container run --name=adidas -dp 80:80 nginx" ]
-#   }
-# }
+  provisioner "remote-exec" {
+    inline = ["docker container run --name=adidas -dp 80:80 nginx"]
+  }
+}
 
 output "ip" {
   value = digitalocean_droplet.diegoServerDroplet.ipv4_address

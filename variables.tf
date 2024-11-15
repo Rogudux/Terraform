@@ -1,4 +1,4 @@
-variable "digitalocean_token" {
+variable "DIGITALOCEAN_TOKEN" {
   type = string
 }
 
@@ -15,5 +15,12 @@ variable "MYSQL_PASSWORD" {
 }
 
 variable "MYSQL_USER" {
+  type = string
+}
+variable "DOMAIN" {
+  type = string
+}
+
+variable "USER_EMAIL" {
   type = string
 }
