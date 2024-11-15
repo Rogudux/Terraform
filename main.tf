@@ -76,10 +76,10 @@ resource "digitalocean_droplet" "diegoServerDroplet" {
 }
 
 
-resource "time_sleep" "wait_installations" {
-  depends_on      = [digitalocean_droplet.diegoServerDroplet]
-  create_duration = "130s"
-}
+# resource "time_sleep" "wait_installations" {
+#   depends_on      = [digitalocean_droplet.diegoServerDroplet]
+#   create_duration = "130s"
+# }
 
 # resource "null_resource" "init_api" {
 #   depends_on = [ time_sleep.wait_installations ]

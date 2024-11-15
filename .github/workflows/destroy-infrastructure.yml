@@ -1,0 +1,51 @@
+name: Deploy Basti Server
+
+on: 
+  workflow_dispatch: 
+    
+
+env:
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  TF_digitalocean_token: ${{ secrets.digitalocean_token }}
+  TF_MYSQL_DB: ${{ secrets.MYSQL_DB }}
+  TF_MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+  TF_MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+  TF_MYSQL_USER: ${{ secrets.MYSQL_USER }}
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        
+      - name: Terraform setup
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.2
+          terraform_wrapper: false
+
+      - name: Create SSH Keys from secrets
+        run: |
+          mkdir -p keys
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ./keys/yo
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ./keys/yo.pub
+          chmod 600 ./keys/yo
+          chmod 600 ./keys/yo.pub
+          
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform format
+        run: terraform fmt
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform destroy --auto-approve
+
+            
+            

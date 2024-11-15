@@ -17,11 +17,3 @@ variable "MYSQL_PASSWORD" {
 variable "MYSQL_USER" {
   type = string
 }
-
-variable "DIGI_TOKEN_API" {
-  type = string
-}
-
-variable "DIGI_KEY_API" {
-  type = string
-}
